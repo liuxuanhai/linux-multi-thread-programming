@@ -16,5 +16,7 @@ private:
 
 private:
    int64_t value_;
+   // mutable mutex_ can be used in const member functions, and it should be mutable because
+   // "lock_guard" requires a non-const mutex.
    mutable std::mutex mutex_;
 };
