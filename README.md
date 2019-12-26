@@ -1,3 +1,13 @@
+# Moduo Architecture
+## File Descriptor - 资源管理
+![Resource Management](./architecture/Resource-Management.png)
+
+## EPoll - 如何监控FD事件
+![EPoll](./architecture/EPoll.png)
+
+## Channel - 如何连接各FD资源与EPoll
+![Channel](./architecture/Channel.png)
+
 # 多线程编程
 ## Mutex
 - [Counter](./code/Counter/Counter.cpp)
