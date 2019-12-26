@@ -37,11 +37,11 @@
     如果有新的Client连接到来，`Acceptor`的Socket资源变为可读，触发`Acceptor::handleRead()`事件函数。
     - `Acceptor::handleRead()`事件函数会执行`TcpServer`的回调函数`newConnection`
 * TcpConnection Channel
-    - 连接着每个`TcpConnection`的Socket资源
+    - 连接着`TcpConnection`的Socket资源
     - `EPollPoller`监控着`TcpConnection`的`Read`事件<br>
     如果从此连接的另一端有数据`send`过来，此`TcpConnection`的Socket资源变为可读，触发`TcpConnection::handleRead`事件函数。
     - `TcpConnection::handleRead`事件函数<br>
-    此回调函数会执行`TcpConnection`的回调函数`MessageCallback`，此回调函数需要用户在里面实现收到数据后的业务逻辑。
+    此事件函数会执行`TcpConnection`的回调函数`MessageCallback`，此回调函数需要用户在里面实现收到数据后的业务逻辑。
     - `EPollPoller`监控着`TcpConnection`的`Write`事件<br>
     如果一次`TcpConnection`的Socket`write`无法发送完所有的数据，Socket资源暂时会不可写，没发送完的数据被暂时存储在`outputBuffer_`中。此时`EPollPoller`会监控`TcpConnection`的`Write`事件。当连接另一端读走数据后，Socket资源重新变为可写，触发`TcpConnection::handleWrite`事件函数。<br>
     如果一次`send`可以发送完所有数据，`send`函数会立即执行回调函数`WriteCompleteCallback`。如果没有发完，回调函数`WriteCompleteCallback`会延后到`TcpConnection::handleWrite`事件函数中执行。
@@ -62,8 +62,8 @@
 * EventLoop::wakeup Channel
     - 连接着一个内部的`eventfd`资源
     - `EPollPoller`监控着`EventLoop`的`Read`事件函数<br>
-    当某子线程调用`EventLoop::queueInLoop`，希望在主线程中执行它的函数时。不仅此回调函数会被填入`pendingFunctors_`，同时`eventfd`资源会被写入某个数据，触发`EventLoop::handleRead()`事件函数。
-    - 和其他事件不同，`EventLoop::handleRead()`事件函数里面并没有执行什么逻辑。此次触发最主要的作用时唤醒主线程，执行`EventLoop::loop`的一次循环。在循环的末尾，主线程会调用`doPendingFunctors`，执行`pendingFunctors_`里所有的回调函数。这样就达到了子线程函数在主线程执行的目的。
+    当某子线程调用`EventLoop::queueInLoop`，希望在主线程中执行它的函数时。在`EventLoop::queueInLoop`中，子线程函数会被填入`pendingFunctors_`，同时`eventfd`资源会被写入某个数据，触发`EventLoop::handleRead()`事件函数。
+    - 和其他事件触发不同，`EventLoop::handleRead()`事件函数里面并没有执行什么逻辑。此次触发最主要的作用时唤醒主线程，执行`EventLoop::loop`的一次循环。在循环的末尾，主线程会调用`doPendingFunctors`，执行`pendingFunctors_`里所有的回调函数。这样就达到了子线程函数在主线程执行的目的。
 
 
 
